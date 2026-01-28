@@ -6,6 +6,7 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [word, setWord] = useState('');
+  const [message, setMessage] = useState([null,'']);
 
   useEffect(()=>{
     contactsService.getContacts().then(load => setPersons(load));
@@ -18,7 +19,12 @@ const App = () => {
       if(entrada){
         const contact = persons.find(({name})=>name.localeCompare(newName)==0);
         const updatedContact={...contact, number:newNumber};
-        contactsService.act(contact.id,updatedContact).then(updated => setPersons(persons.map(person => person.id===updated.id ? updated:person)))
+        contactsService.act(contact.id,updatedContact)
+        .then(updated => setPersons(persons.map(person => person.id===updated.id ? updated:person)))
+        .catch(()=>{
+          setMessage([false,`Information of ${contact.name} has already been removed from server`]);
+          setTimeout(()=>setMessage([null,'']),3000);
+        });
       }
     }
     else{
@@ -32,6 +38,8 @@ const App = () => {
         setPersons(copy);
         setNewName('');
         setNewNumber('');
+        setMessage([true,`Added ${newName}`]);
+        setTimeout(()=>setMessage([null,'']),3000);
       });
     }
   };
@@ -53,6 +61,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={message}/>
       <h2>Phonebook</h2>
       <Filter word={word} handler={handleFilter}/> 
       <h2>Add a new</h2>
@@ -107,6 +116,26 @@ const PersonForm = ({newName, handleInputName, newNumber, handleInputNumber, add
       </div>
     </form>
   );
+};
+
+const Notification = ({message})=>{
+  if(message[0]===null){
+    return null;
+  }
+  else{
+    const styleNotification = {
+      textAlign: 'center',
+      border: `2px solid ${message[0] ? 'green':'red'}`,
+      padding: '10px',
+      color: message[0] ? 'green':'red',
+      fontSize:'20px',
+      fontWeight: 'bold'
+    };
+    return(
+      <p style={styleNotification}>{message}</p>
+    );
+  }
+  
 };
 
 export default App;
