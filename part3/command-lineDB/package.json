@@ -1,0 +1,15 @@
+{
+  "name": "command-linedb",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start":"node mongo.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vegeta777",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mongoose": "^9.2.0"
+  }
+}

@@ -1,7 +1,10 @@
+require('dotenv').config({path: 'algo.env'});
 const express=require('express');
+const Person = require('./models/person');
 const app=express();
 const morgan=require('morgan');
 const cors=require('cors');
+
 
 morgan.token('contenido',function getContent(req){
     return JSON.stringify(req.body)
@@ -74,7 +77,9 @@ app.post('/api/addPerson', (req, res)=>{
 });
 
 app.get('/api/persons', (req, res) =>{
-    res.json(contacts);
+    let persons = [];
+    Person.find({}).then(result=>result.forEach(person => persons.push(person)));
+    console.log(persons);
 });
 
 app.get('/api/persons/:id', (req,res)=>{
@@ -92,7 +97,7 @@ app.delete('/api/delete/:id', (req,res) => {
     res.status(204).end();
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, ()=>{
     console.log(`Server running on port ${PORT}`);
 });
