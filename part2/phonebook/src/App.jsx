@@ -21,10 +21,16 @@ const App = () => {
         const updatedContact={...contact, number:newNumber};
         contactsService.act(contact.id,updatedContact)
         .then(updated => setPersons(persons.map(person => person.id===updated.id ? updated:person)))
-        .catch(()=>{
-          setMessage([false,`Information of ${contact.name} has already been removed from server`]);
-          setTimeout(()=>setMessage([null,'']),3000);
-        });
+        .catch(error => {
+          if(error instanceof TypeError){
+            setMessage([false,`Information of ${contact.name} has already been removed from server`]);
+            setTimeout(()=>setMessage([null,'']),3000);
+          }
+          else{
+            setMessage([false, error.response.data.error]);
+            setTimeout(()=>setMessage([null, '']), 3000);
+          }
+        })
       }
     }
     else{
@@ -40,6 +46,10 @@ const App = () => {
         setNewNumber('');
         setMessage([true,`Added ${newName}`]);
         setTimeout(()=>setMessage([null,'']),3000);
+      })
+      .catch((error)=>{
+        setMessage([false, error.response.data.error]);
+        setTimeout(()=>setMessage([null, '']), 3000);
       });
     }
   };
