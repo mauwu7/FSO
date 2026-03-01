@@ -80,6 +80,7 @@ app.get('/api/persons/:id', (req,res,next) => {
 })
 
 app.delete('/api/delete/:id', (req, res, next) => {
+  console.log('commit de pruba');
   Person.findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(204).end()
