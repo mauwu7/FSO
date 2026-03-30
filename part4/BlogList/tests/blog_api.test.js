@@ -1,0 +1,105 @@
+const {test, after, beforeEach} = require('node:test')
+const assert = require('node:assert')
+const mongoose = require('mongoose')
+const supertest = require('supertest')
+const app = require('../app')
+const Blog = require('../models/blog')
+const api = supertest(app)
+const helper = require('../utils/api_helper')
+
+const testData = [
+    {
+      title: "React patterns",
+      author: "Michael Chan",
+      url: "https://reactpatterns.com/",
+      likes: 7,
+  
+    },
+    {
+      title: "Go To Statement Considered Harmful",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
+      likes: 5,
+    }
+]
+
+beforeEach(async () => {
+    await Blog.deleteMany({})
+    let blogObject=new Blog(testData[0])
+    await blogObject.save()
+    blogObject=new Blog(testData[1])
+    await blogObject.save()
+})
+test('returns the correct amount of blog posts', async () => {
+    const response = await api.get('/api/blogs')
+    assert.strictEqual(response.body.length, testData.length)
+})
+test('blogs are returned as JSON', async () => {
+    const response = await Blog.find({})
+    await api
+    .get('/api/blogs')
+    .expect(200)
+    .expect('Content-Type',/application\/json/)
+})
+test('the unique identifier property is name id', async () => {
+    const response = await Blog.find({})
+    assert.strictEqual(response[0].toJSON().hasOwnProperty('id'),true)
+})
+test('creates a new blog post', async () => {
+    const newBlog = {
+      title: "Canonical string reduction",
+      author: "Edsger W. Dijkstra",
+      url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+      likes: 12, 
+    }
+    await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+    
+    const response = await api.get('/api/blogs')
+    const contenido = response.body.map(res => res.title)
+
+    assert.strictEqual(response.body.length,testData.length+1)
+    assert(contenido.includes("Canonical string reduction"))
+
+})
+test('if the likes property is missing from the request, it will default to 0', async () => {
+    const newBlog = {
+        title: "Willyrex",
+        url: "xxx",
+        author: "ostia"
+    }
+
+    await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(function(res){
+        if(!('likes' in res.body)) throw new Error('Missing likes property!')
+    })
+    .expect(201)
+    
+})
+test('if the title or url properties are missing, it responds Bad Request', async () => {
+    const newBlog = {
+        author: "Hitler",
+    }
+    await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+})
+
+test('succesfull delete of a single resource', async () => {
+
+    const blogsDB = helper.blogListHelper()
+
+    console.log(blogsDB)
+
+    await api.delete(`/api/delete/${blogsDB[0].id}`).expect(204)
+    
+    assert.strictEqual(blogsDB.length, testData.length-1)
+})
+
+after(async () => await mongoose.connection.close())
