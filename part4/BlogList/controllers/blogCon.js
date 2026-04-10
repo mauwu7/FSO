@@ -1,5 +1,4 @@
 const blogRouter = require('express').Router()
-const { request } = require('express')
 const Blog = require('../models/blog')
 
 blogRouter.get('/', async (request, response) => {
@@ -14,16 +13,27 @@ blogRouter.post('/', async (request, response) => {
       request.body.likes="0"
     }
     const blog = new Blog(request.body)
+
     const saved = await blog.save()
+    saved.populate('user')
+    
+    
     response.status(201).json(saved)
   }
   else {response.status(400).json({error: "missing title or url property"})}
 
 })
 
-blogRouter.delete('/delete/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params)
+blogRouter.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndDelete(request.params.id)
   response.status(204).end()
 })
 
-module.exports=blogRouter
+blogRouter.put('/:id', async (request, response) => {
+
+  const updated = await Blog.findByIdAndUpdate(request.params.id, request.body, {returnDocument:'after'})
+
+  response.status(200).json(updated)
+})
+
+module.exports = blogRouter

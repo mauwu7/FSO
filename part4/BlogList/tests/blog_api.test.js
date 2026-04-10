@@ -7,32 +7,16 @@ const Blog = require('../models/blog')
 const api = supertest(app)
 const helper = require('../utils/api_helper')
 
-const testData = [
-    {
-      title: "React patterns",
-      author: "Michael Chan",
-      url: "https://reactpatterns.com/",
-      likes: 7,
-  
-    },
-    {
-      title: "Go To Statement Considered Harmful",
-      author: "Edsger W. Dijkstra",
-      url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
-      likes: 5,
-    }
-]
-
 beforeEach(async () => {
     await Blog.deleteMany({})
-    let blogObject=new Blog(testData[0])
+    let blogObject=new Blog(helper.testData[0])
     await blogObject.save()
-    blogObject=new Blog(testData[1])
+    blogObject=new Blog(helper.testData[1])
     await blogObject.save()
 })
 test('returns the correct amount of blog posts', async () => {
     const response = await api.get('/api/blogs')
-    assert.strictEqual(response.body.length, testData.length)
+    assert.strictEqual(response.body.length, helper.testData.length)
 })
 test('blogs are returned as JSON', async () => {
     const response = await Blog.find({})
@@ -61,7 +45,7 @@ test('creates a new blog post', async () => {
     const response = await api.get('/api/blogs')
     const contenido = response.body.map(res => res.title)
 
-    assert.strictEqual(response.body.length,testData.length+1)
+    assert.strictEqual(response.body.length, helper.testData.length+1)
     assert(contenido.includes("Canonical string reduction"))
 
 })
@@ -92,14 +76,31 @@ test('if the title or url properties are missing, it responds Bad Request', asyn
 })
 
 test('succesfull delete of a single resource', async () => {
+    const blogsDB = await helper.blogListHelper()
+    await api
+    .delete(`/api/blogs/${blogsDB[0].id}`)
+    .expect(204)
+    const afterDelete = await helper.blogListHelper()
+    assert.strictEqual(afterDelete.length, helper.testData.length-1)
+})
 
-    const blogsDB = helper.blogListHelper()
+test('update the information (likes) of an individual blog post', async () => {
+    const updated = {
+      title: "React patterns",
+      author: "Michael Chan",
+      url: "https://reactpatterns.com/",
+      likes: 15 
+    }
 
-    console.log(blogsDB)
+    const blogsDB = await helper.blogListHelper()
 
-    await api.delete(`/api/delete/${blogsDB[0].id}`).expect(204)
-    
-    assert.strictEqual(blogsDB.length, testData.length-1)
+    await api
+    .put(`/api/blogs/${blogsDB[0].id}`)
+    .send(updated)
+    .expect(200)
+    .expect((response) => {
+        if(updated.likes != response.body.likes) throw new Error('no jala')
+    })
 })
 
 after(async () => await mongoose.connection.close())
