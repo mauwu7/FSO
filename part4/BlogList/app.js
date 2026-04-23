@@ -20,7 +20,8 @@ mongoose
   })
 
 app.use(express.json())
-app.use('/api/blogs', blogRouter)
+app.use(middleware.tokenExtractor)
+app.use('/api/blogs', blogRouter, middleware.userExtractor)
 app.use('/api/users', userRouter)
 app.use('/api/login', loginRouter)
 app.use(middleware.unknownEndpoint)
