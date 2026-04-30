@@ -4,15 +4,21 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const api = supertest(app)
 const helper = require('../utils/api_helper')
+let token;
 
 beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
+    let usuarioPrueba = new User(helper.userData)
+    await usuarioPrueba.save()
     let blogObject=new Blog(helper.testData[0])
     await blogObject.save()
     blogObject=new Blog(helper.testData[1])
     await blogObject.save()
+    token = await helper.generateToken()
 })
 test('returns the correct amount of blog posts', async () => {
     const response = await api.get('/api/blogs')
@@ -29,6 +35,7 @@ test('the unique identifier property is name id', async () => {
     const response = await Blog.find({})
     assert.strictEqual(response[0].toJSON().hasOwnProperty('id'),true)
 })
+
 test('creates a new blog post', async () => {
     const newBlog = {
       title: "Canonical string reduction",
@@ -36,8 +43,10 @@ test('creates a new blog post', async () => {
       url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
       likes: 12, 
     }
+
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -58,6 +67,7 @@ test('if the likes property is missing from the request, it will default to 0', 
 
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(function(res){
         if(!('likes' in res.body)) throw new Error('Missing likes property!')
@@ -71,17 +81,30 @@ test('if the title or url properties are missing, it responds Bad Request', asyn
     }
     await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 })
 
 test('succesfull delete of a single resource', async () => {
+    
+    const newBlog = {
+        title: "Canonical string reduction",
+        author: "Edsger W. Dijkstra",
+        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+        likes: 12,
+    }
+    const {body} = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
     const blogsDB = await helper.blogListHelper()
     await api
-    .delete(`/api/blogs/${blogsDB[0].id}`)
+    .delete(`/api/blogs/${body.id}`)
+    .set('Authorization', `Bearer ${token}`)
     .expect(204)
     const afterDelete = await helper.blogListHelper()
-    assert.strictEqual(afterDelete.length, helper.testData.length-1)
+    assert.strictEqual(afterDelete.length, blogsDB.length-1)
 })
 
 test('update the information (likes) of an individual blog post', async () => {
