@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -10,14 +10,36 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState(null)
+  const [titulo, setTitulo] = useState('')
+  const [autor, setAutor] = useState('')
+  const [url, setUrl] = useState('')
 
+  useEffect(() => {
+    blogService.getAll().then(blogs =>
+      setBlogs( blogs )
+    )  
+  }, [])
+
+  useEffect(() => {
+    const loggedUser = window.localStorage.getItem('loggedUser')
+    if(loggedUser){
+      const user = JSON.parse(loggedUser)
+      
+      blogService.setToken(user.token)
+      
+      setUser(user)
+    }
+  }, [])
 
   const handleLogin = async (event) => {
     event.preventDefault()
     try{
-      console.log("Hola desde acaaa")
-      const user = await loginService.login({username, password})
+      const user = await loginService.login({username, password})  
+      window.localStorage.setItem('loggedUser', JSON.stringify(user))
+      
       setUser(user)
+      blogService.setToken(user.token)
+
       setUsername('')
       setPassword('')
     }catch{
@@ -26,11 +48,18 @@ const App = () => {
     }
   }
 
-  useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
-  }, [])
+  const addBlog =  async () => {
+    await blogService.addBlog({titulo: titulo, autor: autor, url: url})
+    setTitulo('')
+    setAutor('')
+    setUrl('')
+  }
+
+  const handleLogout = () => {
+    window.localStorage.clear()
+    setUser(null)
+    blogService.setToken(null)
+  }
 
   if(!user){
     return (
@@ -56,18 +85,40 @@ const App = () => {
   else{
     return (
       <div>
-        <p>{username} logged in</p>
+        <div style={{display: 'flex', gap: '10px'}}>
+          <p>{user.username} logged in</p>
+          <button onClick={handleLogout} style={{alignSelf: 'center'}}>Log out</button>
+        </div>
         {blogs.length == 0 ? <p>No hay ningun blog por el momento :c</p>:<div>
+        
           <h2>Blogs</h2>
           <ul>
            {blogs.map((blog) => <Blog key={blog.id} blog={blog}/>)} 
           </ul>          
           </div>
           }
+          <form onSubmit={addBlog}>
+            <h2>Create new blog</h2>
+            <p>
+              <label>
+                titulo: <input type='text' value={titulo} onChange={({target}) => setTitulo(target.value)}/>
+              </label>
+            </p>
+            <p>
+              <label>
+                autor: <input type='text' value={autor} onChange={({target}) => setAutor(target.value)}/>
+              </label>
+            </p>
+            <p>
+              <label>
+                url: <input type='text' value={url} onChange={({target}) => setUrl(target.value)}/>
+              </label>
+            </p>
+            <button type='submit'>Crear</button>
+          </form>
       </div>
     )
   }
-
 }
 
 export default App

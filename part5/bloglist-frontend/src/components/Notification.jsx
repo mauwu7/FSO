@@ -11,7 +11,7 @@ const Notification = ({message}) => {
 
     return (
         <>
-            {message != null && <p style={styleNotification}>Error al iniciar sesion!</p>}
+            {message != null && <p style={styleNotification}>Contraseña o usuario incorrorectos</p>}
         </>
     )
 }

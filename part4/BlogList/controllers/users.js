@@ -21,4 +21,13 @@ usersRouter.get('/', async (request, response) => {
     response.status(200).json(users)
 })
 
+usersRouter.delete('/:id', async (request, response) => {
+    const user = await User.findById(request.params.id);
+    if(!user) {return response.status(400).json({error: "Id invalido"})}
+    else{
+        await User.findByIdAndDelete(request.params.id)
+        response.status(204).end()
+    }
+})
+
 module.exports = usersRouter
