@@ -1,19 +1,22 @@
 const Notification = ({message}) => {
 
-    const styleNotification = {
-      textAlign: 'center',
-      border: `2px solid red`,
-      padding: '10px',
-      color: 'red',
-      fontSize:'20px',
-      fontWeight: 'bold'
+    if(message[0]!=null){
+        const styleNotification = {
+            textAlign: 'center',
+            border: `2px solid ${(message[0]) ? `red`: `green`}`,
+            padding: '10px',
+            color: `${(message[0]) ? `red`: `green`}`,
+            fontSize:'20px',
+            fontWeight: 'bold'
+        }
+        console.log(message[1])
+        return(
+            <p style={styleNotification}>
+                {message[1]}
+            </p>
+        )
     }
-
-    return (
-        <>
-            {message != null && <p style={styleNotification}>Contraseña o usuario incorrorectos</p>}
-        </>
-    )
 }
+
 
 export default Notification

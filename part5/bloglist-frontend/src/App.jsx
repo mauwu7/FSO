@@ -3,16 +3,17 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
+import BlogForm  from './components/BlogForm'
+import Togglable from './components/Togglable'
 
 const App = () => {
+
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [message, setMessage] = useState(null)
-  const [titulo, setTitulo] = useState('')
-  const [autor, setAutor] = useState('')
-  const [url, setUrl] = useState('')
+  const [message, setMessage] = useState([null,''])
+
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -43,16 +44,16 @@ const App = () => {
       setUsername('')
       setPassword('')
     }catch{
-      setMessage('Error al iniciar sesion!')
-      setTimeout(() => setMessage(null),3000)
+      setMessage([true,'Error: credenciales invalidas'])
+      setTimeout(() => setMessage([null,'']),3000)
     }
   }
 
-  const addBlog =  async () => {
-    await blogService.addBlog({titulo: titulo, autor: autor, url: url})
-    setTitulo('')
-    setAutor('')
-    setUrl('')
+  const addBlog =  async (blog) => {
+    const newBlog = await blogService.addBlog(blog)
+    setBlogs([...blogs,newBlog])
+    setMessage([false,'Se ha agregado un nuevo blog'])
+    setTimeout(() => setMessage([null,'']),3000)
   }
 
   const handleLogout = () => {
@@ -74,7 +75,7 @@ const App = () => {
           </p>
           <p>
             <label>
-              Password <input type='text' value={password} onChange={({target}) => setPassword(target.value)}/>
+              Password <input type='password' value={password} onChange={({target}) => setPassword(target.value)}/>
             </label>
           </p>
           <button type='submit'>login</button>
@@ -84,11 +85,14 @@ const App = () => {
   }
   else{
     return (
+      <>
+      <Notification message={message}/>
       <div>
         <div style={{display: 'flex', gap: '10px'}}>
           <p>{user.username} logged in</p>
           <button onClick={handleLogout} style={{alignSelf: 'center'}}>Log out</button>
         </div>
+
         {blogs.length == 0 ? <p>No hay ningun blog por el momento :c</p>:<div>
         
           <h2>Blogs</h2>
@@ -97,26 +101,11 @@ const App = () => {
           </ul>          
           </div>
           }
-          <form onSubmit={addBlog}>
-            <h2>Create new blog</h2>
-            <p>
-              <label>
-                titulo: <input type='text' value={titulo} onChange={({target}) => setTitulo(target.value)}/>
-              </label>
-            </p>
-            <p>
-              <label>
-                autor: <input type='text' value={autor} onChange={({target}) => setAutor(target.value)}/>
-              </label>
-            </p>
-            <p>
-              <label>
-                url: <input type='text' value={url} onChange={({target}) => setUrl(target.value)}/>
-              </label>
-            </p>
-            <button type='submit'>Crear</button>
-          </form>
+          <Togglable buttonLabel="Show form">
+            <BlogForm addBlog={addBlog} />
+          </Togglable>
       </div>
+      </>
     )
   }
 }
