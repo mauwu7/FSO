@@ -4,6 +4,7 @@ export default function BlogForm ({ addBlog }) {
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
   const [url, setUrl] = useState('')
+  
   const submitBlog = (event) => {
     event.preventDefault()
     addBlog({ title: titulo, author: autor, url: url })
