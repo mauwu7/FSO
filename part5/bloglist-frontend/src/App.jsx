@@ -73,7 +73,7 @@ const App = () => {
     return (
       <>
         <Notification message={ message }/>
-        <form onSubmit={ handleLogin }>
+        <form data-testid='form-login' onSubmit={ handleLogin }>
           <h2>Login</h2>
           <p>
             <label>
