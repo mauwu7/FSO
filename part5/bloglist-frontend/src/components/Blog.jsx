@@ -31,7 +31,7 @@ const Blog = ({ blog,  updateBlog, deleteBlog }) => {
         <ul style={ { padding: '0', listStyle: 'none' } }>
           <li>Autor: { blog.author }</li>
           <li className='url'>Url: { blog.url }</li>
-          <li className='likes'>likes: { blog.likes } <button className='like_button' onClick={ incrementLikes }>Like</button></li>
+          <li className='likes' data-testid='likes-test'>likes: { blog.likes } <button className='like_button' onClick={ incrementLikes }>Like</button></li>
           <li style={ { marginTop: '10px' } }><button onClick={ eliminar }>Eliminar</button></li>
         </ul>
       }
