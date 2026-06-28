@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+
+import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom' //Agregado recientemente
+
 import Notification from './components/Notification'
 import BlogForm  from './components/BlogForm'
 import Togglable from './components/Togglable'
+import Home from './components/Home'
+import LoginForm from './components/LoginForm'
 
 const App = () => {
 
@@ -14,6 +19,9 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState([null,''])
 
+  const padding = {
+    padding: 5
+  }
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -69,52 +77,71 @@ const App = () => {
     blogService.setToken(null)
   }
 
-  if(!user){
-    return (
-      <>
-        <Notification message={ message }/>
-        <form data-testid='form-login' onSubmit={ handleLogin }>
-          <h2>Login</h2>
-          <p>
-            <label>
-              Username <input type='text' value={ username } onChange={ ( { target } ) => setUsername(target.value) }/>
-            </label>
-          </p>
-          <p>
-            <label>
-              Password <input type='password' value={ password } onChange={ ( { target } ) => setPassword(target.value) }/>
-            </label>
-          </p>
-          <button type='submit'>login</button>
-        </form>
-      </>
-    )
-  }
-  else{
-    return (
-      <>
-        <Notification message={ message }/>
-        <div>
-          <div style={  { display: 'flex', gap: '10px' } }>
-            <p>{ user.username } logged in</p>
-            <button onClick= { handleLogout } style={ { alignSelf: 'center' } } >Log out</button>
-          </div>
 
-          { blogs.length === 0 ? <p>No hay ningun blog por el momento :c</p>:
-            <div>
-              <h2>Blogs</h2>
-              <ul style= { { listStyle: 'none', padding: 0, lineHeight: '1em' } } >
-                {blogs.sort((a,b) => b.likes-a.likes).map((blog) => <Blog key= { blog.id } blog= { blog } updateBlog= { updateBlog } deleteBlog= { deleteBlog }/>)}
-              </ul>
-            </div>
-          }
-          <Togglable buttonLabel="Show form">
-            <BlogForm addBlog={ addBlog } />
-          </Togglable>
-        </div>
-      </>
-    )
-  }
+  return(
+    <Router>
+      <div>
+        <Link style={ padding } to="/">Blogs</Link>
+        { !user ? <Link style={ padding } to='/login'>Login</Link>:<Link style={ padding } to='/'>Log out</Link> }
+      </div>
+
+      <Routes>
+        <Route path='/' element={ <Home /> }/>
+        <Route path='/login' element={ <LoginForm /> }/>
+      </Routes>
+      
+    </Router>
+  )
+
+
+
+  // if(!user){
+  //   return (
+  //     <>
+  //       <Notification message={ message }/>
+  //       <form data-testid='form-login' onSubmit={ handleLogin }>
+  //         <h2>Login</h2>
+  //         <p>
+  //           <label>
+  //             Username <input type='text' value={ username } onChange={ ( { target } ) => setUsername(target.value) }/>
+  //           </label>
+  //         </p>
+  //         <p>
+  //           <label>
+  //             Password <input type='password' value={ password } onChange={ ( { target } ) => setPassword(target.value) }/>
+  //           </label>
+  //         </p>
+  //         <button type='submit'>login</button>
+  //       </form>
+  //     </>
+  //   )
+  // }
+  // else{
+  //   return (
+  //     <>
+  //       <Notification message={ message }/>
+  //       <div>
+  //         <div style={  { display: 'flex', gap: '10px' } }>
+  //           <p>{ user.username } logged in</p>
+  //           <button onClick= { handleLogout } style={ { alignSelf: 'center' } } >Log out</button>
+  //         </div>
+
+  //         { blogs.length === 0 ? <p>No hay ningun blog por el momento :c</p>:
+  //           <div>
+  //             <h2>Blogs</h2>
+  //             <ul style= { { listStyle: 'none', padding: 0, lineHeight: '1em' } } >
+  //               {blogs.sort((a,b) => b.likes-a.likes).map((blog) => <Blog key= { blog.id } blog= { blog } updateBlog= { updateBlog } deleteBlog= { deleteBlog }/>)}
+  //             </ul>
+  //           </div>
+  //         }
+  //         <Togglable buttonLabel="Show form">
+  //           <BlogForm addBlog={ addBlog } />
+  //         </Togglable>
+  //       </div>
+  //     </>
+  //   )
+  // }
+
 }
 
 export default App

@@ -82,16 +82,52 @@ describe('Blog app', () => {
       })
 
       test('a blog can be liked', async ({ page }) => {
-
-
+        const likes=page.getByTestId('likes-test')
+        await expect(likes).toContainText('0')
         await page.getByRole('button', {name: 'Like'}).click()
-
-
-        
-
+        await expect(likes).toContainText('1')
       })
 
+      test('the delte button is visble', async ({ page }) => {
+        await expect(page.getByRole('button', {name: 'Eliminar'})).toBeVisible()
+      })
+
+      test('a blog can be deleted', async ({ page }) => {
+        await page.getByRole('button', {name: 'Eliminar'}).click()
+        await expect(page.getByText('No hay ningun blog por el momento :c')).toBeVisible()
+      })
     })
+
+    test('blogs are arranged according to the likes', async ({ page }) => {ç
+
+        await page.getByRole('button', {name: 'Show form'}).click()
+
+        const blogs = [
+          {
+            titulo: 'Blog para testear algo',
+            autor: 'admin1234',
+            url: 'www.testBlog.com'
+          },
+          {
+            titulo: 'Otro blog',
+            autor: 'admin1234',
+            url:'www.testBlog.com'
+          },
+          {
+            titulo: 'blog de test 3',
+            autor: 'admin1234',
+            url: 'www.testBlog.com'
+          }
+        ]
+      
+        for(let blog of blogs){
+          await page.getByLabel('titulo:').fill(`${blog.titulo}`)
+          await page.getByLabel('autor:').fill(`${blog.autor}`)
+          await page.getByLabel('url:').fill(`${blog.url}`)
+          await page.getByRole('button', {name:'Crear'}).click()
+        }
+    })
+
   })
 
 })
