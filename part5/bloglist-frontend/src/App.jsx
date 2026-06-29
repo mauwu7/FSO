@@ -1,23 +1,21 @@
 import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
-
-import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom' //Agregado recientemente
-
+import {Routes, Route, Link, useNavigate} from 'react-router-dom' //Agregado recientemente
 import Notification from './components/Notification'
 import BlogForm  from './components/BlogForm'
 import Togglable from './components/Togglable'
-import Home from './components/Home'
+import BlogList from './components/BlogList'
 import LoginForm from './components/LoginForm'
+import Blog from './components/Blog'
 
 const App = () => {
 
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [message, setMessage] = useState([null,''])
+  
+  const navigate = useNavigate()
 
   const padding = {
     padding: 5
@@ -38,15 +36,13 @@ const App = () => {
     }
   }, [])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  const handleLogin = async (username, password) => {
     try {
       const user = await loginService.login( { username, password } )
       window.localStorage.setItem('loggedUser', JSON.stringify(user))
       setUser(user)
       blogService.setToken(user.token)
-      setUsername('')
-      setPassword('')
+      navigate('/')
     } catch {
       setMessage([true,'Error: credenciales invalidas'])
       setTimeout(() => setMessage([null,'']),3000)
@@ -75,22 +71,27 @@ const App = () => {
     window.localStorage.clear()
     setUser(null)
     blogService.setToken(null)
+    navigate('/')
+
   }
 
-
   return(
-    <Router>
+
+    <>
+      
+      <Notification message={message} />
       <div>
         <Link style={ padding } to="/">Blogs</Link>
-        { !user ? <Link style={ padding } to='/login'>Login</Link>:<Link style={ padding } to='/'>Log out</Link> }
+        { !user ? <Link style={ padding } to='/login'>Login</Link>:<Link style={ padding } to='/'><button onClick={handleLogout}>Log out</button></Link> }
       </div>
 
       <Routes>
-        <Route path='/' element={ <Home /> }/>
-        <Route path='/login' element={ <LoginForm /> }/>
+        <Route path='/' element={ <BlogList blogs={ blogs }  updateBlog={ updateBlog } deleteBlog={ deleteBlog }/> }/>
+        <Route path='/login' element={ <LoginForm handleLogin={ handleLogin }/> }/>
+        <Route path='/blog/:id' element={ <Blog />}/>
       </Routes>
-      
-    </Router>
+
+    </>
   )
 
 
