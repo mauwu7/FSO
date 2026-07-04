@@ -1,16 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function BlogForm ({ addBlog }) {
   const [titulo, setTitulo] = useState('')
   const [autor, setAutor] = useState('')
   const [url, setUrl] = useState('')
+  const navigate = useNavigate()
   
-  const submitBlog = (event) => {
+  const submitBlog = async (event) => {
     event.preventDefault()
-    addBlog({ title: titulo, author: autor, url: url })
+    await addBlog({ title: titulo, author: autor, url: url })
     setTitulo('')
     setAutor('')
     setUrl('')
+    navigate('/')
+
   }
   return(
     <form onSubmit={ submitBlog }>

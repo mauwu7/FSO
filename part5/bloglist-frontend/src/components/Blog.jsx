@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useNavigate } from "react-router-dom"
 
-const Blog = ({ blog,  updateBlog, deleteBlog }) => {
+const Blog = ({ blog,  updateBlog, deleteBlog, user }) => {
 
-  const [showDetails, setShowDetails] = useState(false)
+  const navigate = useNavigate()
 
   const incrementLikes = () => {
 
@@ -16,30 +16,25 @@ const Blog = ({ blog,  updateBlog, deleteBlog }) => {
     updateBlog(sent, blog.id)
   }
 
-  const eliminar = () => {
-    deleteBlog(blog.id)
+  const eliminar = async () => {
+    await deleteBlog(blog.id)
+    navigate('/')
   }
 
-  //clase test h4.  URL Y Likes clases
 
   return(
-    <div style={ { marginBottom: '10px', border: '1px solid black' } }>
-      
-      <div data-testid="directions" style={ { display: 'flex', alignItems: 'center', gap: '20px' } }>
-        <h4 className='title'>{ blog.title }</h4> 
-        <button onClick={ () => setShowDetails(!showDetails) }>{ showDetails? "Ocultar detalles" : "Mostrar detalles" }</button>
+    <>
+      <h2>{blog.title}</h2>
+      <p style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer', margin: '0'}}>{blog.url}</p>
+      <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+        <p>likes: {blog.likes}</p>
+        {user && <button style={{display: 'inline-block'}} onClick={incrementLikes}>Like</button>}
       </div>
-
-      { showDetails &&
-        <ul  style={ { padding: '0', listStyle: 'none' } }>
-          <li>Autor: { blog.author }</li>
-          <li className='url'>Url: { blog.url }</li>
-          <li className='likes' data-testid='likes-test'>likes: { blog.likes } <button className='like_button' onClick={ incrementLikes }>Like</button></li>
-          <li style={ { marginTop: '10px' } }><button onClick={ eliminar }>Eliminar</button></li>
-        </ul>
-      }
-
-    </div>)
+      <p>Added by {blog.author}</p>
+      {user && <button onClick={eliminar}>Remove</button>}
+      
+    </>
+    )
 }
 
 export default Blog
