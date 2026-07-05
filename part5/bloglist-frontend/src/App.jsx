@@ -35,6 +35,7 @@ const App = () => {
       const user = JSON.parse(loggedUser)
       blogService.setToken(user.token)
       setUser(user)
+
     }
   }, [])
 
@@ -77,8 +78,9 @@ const App = () => {
 
   }
 
-  return(
+  // console.log(blogs)
 
+  return(
     <>
       <Notification message={message} />
       <div>

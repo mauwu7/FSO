@@ -1,4 +1,6 @@
 import axios from 'axios'
+
+
 const baseUrl = '/api/blogs'
 
 let token=null
@@ -15,6 +17,7 @@ const addBlog = async (newBlog) => {
     headers: { Authorization: token }
   }
   const response = await axios.post(baseUrl, newBlog, config)
+  console.log(response.data)
   return response.data
 }
 
@@ -30,4 +33,8 @@ const deleteBlog = async (id) => {
   await axios.delete(`${baseUrl}/${id}`,config)
 }
 
-export default { getAll, addBlog, setToken, updateBlog, deleteBlog }
+// const getDecodedToken = (tokenDecoded) => {
+//   return jwt.verify(tokenDecoded, process.env.SECRET)
+// }
+
+export default { getAll, addBlog, setToken, updateBlog, deleteBlog}
