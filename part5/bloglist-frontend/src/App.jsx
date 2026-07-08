@@ -1,27 +1,28 @@
 import { useState, useEffect } from 'react'
 import blogService from './services/blogs'
 import loginService from './services/login'
-import { Routes, Route, Link, useNavigate, useMatch } from 'react-router-dom' //Agregado recientemente
+import { Routes, Route, Link, useNavigate, useMatch } from 'react-router-dom' 
 import Notification from './components/Notification'
 import BlogForm  from './components/BlogForm'
 import BlogList from './components/BlogList'
 import LoginForm from './components/LoginForm'
 import Blog from './components/Blog'
+import { Button, Container, Toolbar, AppBar } from '@mui/material'
+
+
 
 const App = () => {
 
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [message, setMessage] = useState([null,''])
+  const [message, setMessage] = useState(null)
   
   const navigate = useNavigate()
 
   const match = useMatch('blog/:id')
   const blog = match ? blogs.find(blog => blog.id === match.params.id) : null
 
-  const padding = {
-    padding: 5
-  }
+  const style = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -35,7 +36,6 @@ const App = () => {
       const user = JSON.parse(loggedUser)
       blogService.setToken(user.token)
       setUser(user)
-
     }
   }, [])
 
@@ -47,13 +47,14 @@ const App = () => {
       blogService.setToken(user.token)
       navigate('/')
     } catch {
-      setMessage([true,'Error: credenciales invalidas'])
-      setTimeout(() => setMessage([null,'']),3000)
+      setMessage({ text: 'Wrong credentials!', type: 'error' })
+      setTimeout(() => setMessage(null),3000)
     }
   }
 
   const updateBlog = async (updated, id) => {
     const actualizado = await blogService.updateBlog(updated,id)
+    // console.log(actualizado) 
     const updatedList = blogs.filter((blog) => blog.id!==id)
     setBlogs([...updatedList, actualizado])
   }
@@ -61,8 +62,8 @@ const App = () => {
   const addBlog =  async (blog) => {
     const newBlog = await blogService.addBlog(blog)
     setBlogs([...blogs,newBlog])
-    setMessage([false,'Se ha agregado un nuevo blog'])
-    setTimeout(() => setMessage([null,'']),3000)
+    setMessage({ text: 'Blog added succesfully!', type: 'success' })
+    setTimeout(() => setMessage(null), 3000)
   }
 
   const deleteBlog = async(id) => {
@@ -78,17 +79,18 @@ const App = () => {
 
   }
 
-  // console.log(blogs)
 
   return(
-    <>
-      <Notification message={message} />
-      <div>
-        <Link style={ padding } to="/">Blogs</Link>
-        { !user ? <Link style={ padding } to='/login'>Login</Link>:<Link style={ padding } to='/'><button onClick={handleLogout}>Log out</button></Link> }
-        {user && <Link style={ padding } to='/create'>New blog</Link>}
-      </div>
+    <Container>
 
+      <AppBar position="static">
+        <Toolbar>
+          <Button color="inherit" component={Link} to="/" sx={ style }>Home</Button>
+          { !user ? <Button color="inherit" component={Link} to="/login" sx={ style }>Login</Button>:<Button color="inherit" component={Link} to="/" onClick={handleLogout} sx={ style }>Log out</Button>}
+          { user && <Button color='inherit' component={Link} to="/create" sx={ style }>New Blog</Button>}
+        </Toolbar>
+      </AppBar>
+      <Notification message={message} />
       <Routes>
         <Route path='/' element={ <BlogList blogs={ blogs }  updateBlog={ updateBlog } deleteBlog={ deleteBlog }/> }/>
         <Route path='/login' element={ <LoginForm handleLogin={ handleLogin }/> }/>
@@ -96,7 +98,7 @@ const App = () => {
         <Route path='/create' element={ <BlogForm addBlog={addBlog}/>}/>
       </Routes>
 
-    </>
+    </Container>
   )
 }
 

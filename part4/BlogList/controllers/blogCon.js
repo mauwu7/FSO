@@ -3,10 +3,16 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 
+// blogRouter.get('/', async (request, response) => {
+//   const blogs = await Blog.find({}).populate('user')
+//   response.json(blogs)
+// })  <---------------------------- Ejemplo de populate ----------------------------->
+
 blogRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({}).populate('user')
+  const blogs = await Blog.find({})
   response.json(blogs)
 })
+
 
 blogRouter.post('/', async (request, response) => {
   
